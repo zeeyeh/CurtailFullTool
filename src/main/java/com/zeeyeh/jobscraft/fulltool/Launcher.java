@@ -92,14 +92,16 @@ public class Launcher {
                     Level level = new Level(levelId, PinyinUtil.getPinyin(jobTitle + jobLevelTitle).replace(" ", ""), jobTitle + jobLevelTitle, 0, 0, Collections.emptyList());
 //                    System.out.println("   " + jobLevelTitle);
                     JSONArray jobCurtailObjects = jobLevel.getJSONObject("children").getJSONArray("attached");
+                    long curtailId = IdUtil.getSnowflakeNextId();
+                    Curtail curtail = new Curtail(curtailId, "", jobId, levelId, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
                     for (Object jobCurtailObject : jobCurtailObjects) {
                         JSONObject jobCurtail = (JSONObject) jobCurtailObject;
                         // 职业限制类型标题
                         String curtailTitle = jobCurtail.getString("title");
+                        curtail.setTitle(PinyinUtil.getPinyin(jobTitle + jobLevelTitle + curtailTitle).replace(" ", ""));
 //                        System.out.println("    " + curtailTitle);
-                        long curtailId = IdUtil.getSnowflakeNextId();
-                        Curtail curtail = new Curtail(curtailId, PinyinUtil.getPinyin(jobTitle + jobLevelTitle + curtailTitle).replace(" ", ""), jobId, levelId, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-                        if (curtailTitle.equalsIgnoreCase("使用物品")) {
+                        if (curtailTitle.equalsIgnoreCase("使用物品"))
+                        {
                             if (jobCurtail.containsKey("children")) {
                                 JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
                                 List<Curtail.IdExp> tools = new ArrayList<>();
@@ -131,7 +133,9 @@ public class Launcher {
                                 }
                                 curtail.setTools(tools);
                             }
-                        } else if (curtailTitle.equalsIgnoreCase("食物[通用]")) {
+                        }
+                        else if (curtailTitle.equalsIgnoreCase("食物[通用]"))
+                        {
                             if (jobCurtail.containsKey("children")) {
                                 JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
                                 List<Curtail.IdExp> foods = new ArrayList<>();
@@ -160,7 +164,9 @@ public class Launcher {
                                 }
                                 curtail.setFoods(foods);
                             }
-                        } else if (curtailTitle.equalsIgnoreCase("可放置方块")) {
+                        }
+                        else if (curtailTitle.equalsIgnoreCase("可放置方块"))
+                        {
                             if (jobCurtail.containsKey("children")) {
                                 JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
                                 List<Curtail.IdExp> places = new ArrayList<>();
@@ -191,191 +197,196 @@ public class Launcher {
 //                                            System.out.println("     " + itemIdChain);
                                 }
                                 curtail.setPlaces(places);
-                            } else if (curtailTitle.equalsIgnoreCase("可破坏方块")) {
-                                if (jobCurtail.containsKey("children")) {
-                                    JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
-                                    List<Curtail.IdExp> destructs = new ArrayList<>();
-                                    for (Object curtailItemObject : curtailItemObjects) {
-                                        JSONObject curtailItem = (JSONObject) curtailItemObject;
-                                        // 限制物品名称
-                                        String itemTitle = curtailItem.getString("title");
-                                        StringBuilder itemIdChain = new StringBuilder(itemTitle);
-                                        Curtail.IdExp idExp = new Curtail.IdExp();
-                                        if (curtailItem.containsKey("children")) {
-                                            JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
-                                            // 限制物品Id名称
-                                            String itemIdTitle = item.getString("title");
-                                            itemIdChain.append(":").append(itemIdTitle);
-                                            idExp.setId(itemIdTitle);
-                                            if (item.containsKey("children")) {
-                                                JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
-                                                String itemExpTitle = itemIdExp.getString("title");
-                                                itemIdChain.append(":").append(itemExpTitle);
-                                                idExp.setExp(Long.parseLong(itemExpTitle));
-                                            } else {
-                                                itemIdChain.append(":").append("0");
-                                                // 限制物品默认经验点
-                                                idExp.setExp(0);
-                                            }
-                                        }
-                                        destructs.add(idExp);
-//                                                System.out.println("     " + itemIdChain);
-                                    }
-                                    curtail.setDestructs(destructs);
-                                }
-                            } else if (curtailTitle.equalsIgnoreCase("合成")) {
-                                if (jobCurtail.containsKey("children")) {
-                                    JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
-                                    List<Curtail.IdExp> recipes = new ArrayList<>();
-                                    for (Object curtailItemObject : curtailItemObjects) {
-                                        JSONObject curtailItem = (JSONObject) curtailItemObject;
-                                        // 限制物品名称
-                                        String itemTitle = curtailItem.getString("title");
-                                        StringBuilder itemIdChain = new StringBuilder(itemTitle);
-                                        Curtail.IdExp idExp = new Curtail.IdExp();
-                                        if (curtailItem.containsKey("children")) {
-                                            JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
-                                            // 限制物品Id名称
-                                            String itemIdTitle = item.getString("title");
-                                            itemIdChain.append(":").append(itemIdTitle);
-                                            idExp.setId(itemIdTitle);
-                                            if (item.containsKey("children")) {
-                                                JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
-                                                String itemExpTitle = itemIdExp.getString("title");
-                                                itemIdChain.append(":").append(itemExpTitle);
-                                                idExp.setExp(Long.parseLong(itemExpTitle));
-                                            } else {
-                                                itemIdChain.append(":").append("0");
-                                                // 限制物品默认经验点
-                                                idExp.setExp(0);
-                                            }
-                                        }
-                                        recipes.add(idExp);
-//                                                    System.out.println("     " + itemIdChain);
-                                    }
-                                    curtail.setRecipes(recipes);
-                                }
-                            } else if (curtailTitle.equalsIgnoreCase("交互")) {
-                                if (jobCurtail.containsKey("children")) {
-                                    JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
-                                    List<Curtail.IdExp> interacts = new ArrayList<>();
-                                    for (Object curtailItemObject : curtailItemObjects) {
-                                        JSONObject curtailItem = (JSONObject) curtailItemObject;
-                                        // 限制物品名称
-                                        String itemTitle = curtailItem.getString("title");
-                                        StringBuilder itemIdChain = new StringBuilder(itemTitle);
-                                        Curtail.IdExp idExp = new Curtail.IdExp();
-                                        if (curtailItem.containsKey("children")) {
-                                            JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
-                                            // 限制物品Id名称
-                                            String itemIdTitle = item.getString("title");
-                                            itemIdChain.append(":").append(itemIdTitle);
-                                            idExp.setId(itemIdTitle);
-                                            if (item.containsKey("children")) {
-                                                JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
-                                                String itemExpTitle = itemIdExp.getString("title");
-                                                itemIdChain.append(":").append(itemExpTitle);
-                                                idExp.setExp(Long.parseLong(itemExpTitle));
-                                            } else {
-                                                itemIdChain.append(":").append("0");
-                                                // 限制物品默认经验点
-                                                idExp.setExp(0);
-                                            }
-                                        }
-                                        interacts.add(idExp);
-//                                                        System.out.println("     " + itemIdChain);
-                                    }
-                                    curtail.setInteracts(interacts);
-                                }
-                            } else if (curtailTitle.equalsIgnoreCase("攻击")) {
-                                if (jobCurtail.containsKey("children")) {
-                                    JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
-                                    List<Curtail.IdExp> attacks = new ArrayList<>();
-                                    for (Object curtailItemObject : curtailItemObjects) {
-                                        JSONObject curtailItem = (JSONObject) curtailItemObject;
-                                        // 限制物品名称
-                                        String itemTitle = curtailItem.getString("title");
-                                        StringBuilder itemIdChain = new StringBuilder(itemTitle);
-                                        Curtail.IdExp idExp = new Curtail.IdExp();
-                                        if (curtailItem.containsKey("children")) {
-                                            JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
-                                            // 限制物品Id名称
-                                            String itemIdTitle = item.getString("title");
-                                            itemIdChain.append(":").append(itemIdTitle);
-                                            idExp.setId(itemIdTitle);
-                                            if (item.containsKey("children")) {
-                                                JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
-                                                String itemExpTitle = itemIdExp.getString("title");
-                                                itemIdChain.append(":").append(itemExpTitle);
-                                                idExp.setExp(Long.parseLong(itemExpTitle));
-                                            } else {
-                                                itemIdChain.append(":").append("0");
-                                                // 限制物品默认经验点
-                                                idExp.setExp(0);
-                                            }
-                                        }
-                                        attacks.add(idExp);
-//                                                            System.out.println("     " + itemIdChain);
-                                    }
-                                    curtail.setAttacks(attacks);
-                                }
-                            } else if (curtailTitle.equalsIgnoreCase("增益")) {
-                                if (jobCurtail.containsKey("children")) {
-                                    JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
-                                    List<Curtail.IdExp> buffs = new ArrayList<>();
-                                    for (Object curtailItemObject : curtailItemObjects) {
-                                        JSONObject curtailItem = (JSONObject) curtailItemObject;
-                                        // 限制物品名称
-                                        String itemTitle = curtailItem.getString("title");
-                                        StringBuilder itemIdChain = new StringBuilder(itemTitle);
-                                        Curtail.IdExp idExp = new Curtail.IdExp();
-                                        if (curtailItem.containsKey("children")) {
-                                            JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
-                                            // 限制物品Id名称
-                                            String itemIdTitle = item.getString("title");
-                                            itemIdChain.append(":").append(itemIdTitle);
-                                            idExp.setId(itemIdTitle);
-                                            if (item.containsKey("children")) {
-                                                JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
-                                                String itemExpTitle = itemIdExp.getString("title");
-                                                itemIdChain.append(":").append(itemExpTitle);
-                                                idExp.setExp(Long.parseLong(itemExpTitle));
-                                            } else {
-                                                itemIdChain.append(":").append("0");
-                                                // 限制物品默认经验点
-                                                idExp.setExp(0);
-                                            }
-                                        }
-                                        buffs.add(idExp);
-//                                                            System.out.println("     " + itemIdChain);
-                                    }
-                                    curtail.setBuffs(buffs);
-                                }
-                            } else if (curtailTitle.equalsIgnoreCase("最大经验点")) {
-                                if (jobCurtail.containsKey("children")) {
-                                    JSONObject maxExpObject = (JSONObject) jobCurtail.getJSONObject("children").getJSONArray("attached").get(0);
-                                    level.setMaxExp(Integer.parseInt(maxExpObject.getString("title")));
-                                }
                             }
-                            curtails.add(curtail);
+                        }
+                        else if (curtailTitle.equalsIgnoreCase("可破坏方块"))
+                        {
+                            if (jobCurtail.containsKey("children")) {
+                                JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
+                                List<Curtail.IdExp> destructs = new ArrayList<>();
+                                for (Object curtailItemObject : curtailItemObjects) {
+                                    JSONObject curtailItem = (JSONObject) curtailItemObject;
+                                    // 限制物品名称
+                                    String itemTitle = curtailItem.getString("title");
+                                    StringBuilder itemIdChain = new StringBuilder(itemTitle);
+                                    Curtail.IdExp idExp = new Curtail.IdExp();
+                                    if (curtailItem.containsKey("children")) {
+                                        JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
+                                        // 限制物品Id名称
+                                        String itemIdTitle = item.getString("title");
+                                        itemIdChain.append(":").append(itemIdTitle);
+                                        idExp.setId(itemIdTitle);
+                                        if (item.containsKey("children")) {
+                                            JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
+                                            String itemExpTitle = itemIdExp.getString("title");
+                                            itemIdChain.append(":").append(itemExpTitle);
+                                            idExp.setExp(Long.parseLong(itemExpTitle));
+                                        } else {
+                                            itemIdChain.append(":").append("0");
+                                            // 限制物品默认经验点
+                                            idExp.setExp(0);
+                                        }
+                                    }
+                                    destructs.add(idExp);
+//                                                System.out.println("     " + itemIdChain);
+                                }
+                                curtail.setDestructs(destructs);
+                            }
+                        } else if (curtailTitle.equalsIgnoreCase("合成")) {
+                            if (jobCurtail.containsKey("children")) {
+                                JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
+                                List<Curtail.IdExp> recipes = new ArrayList<>();
+                                for (Object curtailItemObject : curtailItemObjects) {
+                                    JSONObject curtailItem = (JSONObject) curtailItemObject;
+                                    // 限制物品名称
+                                    String itemTitle = curtailItem.getString("title");
+                                    StringBuilder itemIdChain = new StringBuilder(itemTitle);
+                                    Curtail.IdExp idExp = new Curtail.IdExp();
+                                    if (curtailItem.containsKey("children")) {
+                                        JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
+                                        // 限制物品Id名称
+                                        String itemIdTitle = item.getString("title");
+                                        itemIdChain.append(":").append(itemIdTitle);
+                                        idExp.setId(itemIdTitle);
+                                        if (item.containsKey("children")) {
+                                            JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
+                                            String itemExpTitle = itemIdExp.getString("title");
+                                            itemIdChain.append(":").append(itemExpTitle);
+                                            idExp.setExp(Long.parseLong(itemExpTitle));
+                                        } else {
+                                            itemIdChain.append(":").append("0");
+                                            // 限制物品默认经验点
+                                            idExp.setExp(0);
+                                        }
+                                    }
+                                    recipes.add(idExp);
+//                                                    System.out.println("     " + itemIdChain);
+                                }
+                                curtail.setRecipes(recipes);
+                            }
+                        } else if (curtailTitle.equalsIgnoreCase("交互")) {
+                            if (jobCurtail.containsKey("children")) {
+                                JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
+                                List<Curtail.IdExp> interacts = new ArrayList<>();
+                                for (Object curtailItemObject : curtailItemObjects) {
+                                    JSONObject curtailItem = (JSONObject) curtailItemObject;
+                                    // 限制物品名称
+                                    String itemTitle = curtailItem.getString("title");
+                                    StringBuilder itemIdChain = new StringBuilder(itemTitle);
+                                    Curtail.IdExp idExp = new Curtail.IdExp();
+                                    if (curtailItem.containsKey("children")) {
+                                        JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
+                                        // 限制物品Id名称
+                                        String itemIdTitle = item.getString("title");
+                                        itemIdChain.append(":").append(itemIdTitle);
+                                        idExp.setId(itemIdTitle);
+                                        if (item.containsKey("children")) {
+                                            JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
+                                            String itemExpTitle = itemIdExp.getString("title");
+                                            itemIdChain.append(":").append(itemExpTitle);
+                                            idExp.setExp(Long.parseLong(itemExpTitle));
+                                        } else {
+                                            itemIdChain.append(":").append("0");
+                                            // 限制物品默认经验点
+                                            idExp.setExp(0);
+                                        }
+                                    }
+                                    interacts.add(idExp);
+//                                                        System.out.println("     " + itemIdChain);
+                                }
+                                curtail.setInteracts(interacts);
+                            }
+                        } else if (curtailTitle.equalsIgnoreCase("攻击")) {
+                            if (jobCurtail.containsKey("children")) {
+                                JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
+                                List<Curtail.IdExp> attacks = new ArrayList<>();
+                                for (Object curtailItemObject : curtailItemObjects) {
+                                    JSONObject curtailItem = (JSONObject) curtailItemObject;
+                                    // 限制物品名称
+                                    String itemTitle = curtailItem.getString("title");
+                                    StringBuilder itemIdChain = new StringBuilder(itemTitle);
+                                    Curtail.IdExp idExp = new Curtail.IdExp();
+                                    if (curtailItem.containsKey("children")) {
+                                        JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
+                                        // 限制物品Id名称
+                                        String itemIdTitle = item.getString("title");
+                                        itemIdChain.append(":").append(itemIdTitle);
+                                        idExp.setId(itemIdTitle);
+                                        if (item.containsKey("children")) {
+                                            JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
+                                            String itemExpTitle = itemIdExp.getString("title");
+                                            itemIdChain.append(":").append(itemExpTitle);
+                                            idExp.setExp(Long.parseLong(itemExpTitle));
+                                        } else {
+                                            itemIdChain.append(":").append("0");
+                                            // 限制物品默认经验点
+                                            idExp.setExp(0);
+                                        }
+                                    }
+                                    attacks.add(idExp);
+//                                                            System.out.println("     " + itemIdChain);
+                                }
+                                curtail.setAttacks(attacks);
+                            }
+                        } else if (curtailTitle.equalsIgnoreCase("增益")) {
+                            if (jobCurtail.containsKey("children")) {
+                                JSONArray curtailItemObjects = jobCurtail.getJSONObject("children").getJSONArray("attached");
+                                List<Curtail.IdExp> buffs = new ArrayList<>();
+                                for (Object curtailItemObject : curtailItemObjects) {
+                                    JSONObject curtailItem = (JSONObject) curtailItemObject;
+                                    // 限制物品名称
+                                    String itemTitle = curtailItem.getString("title");
+                                    StringBuilder itemIdChain = new StringBuilder(itemTitle);
+                                    Curtail.IdExp idExp = new Curtail.IdExp();
+                                    if (curtailItem.containsKey("children")) {
+                                        JSONObject item = (JSONObject) curtailItem.getJSONObject("children").getJSONArray("attached").get(0);
+                                        // 限制物品Id名称
+                                        String itemIdTitle = item.getString("title");
+                                        itemIdChain.append(":").append(itemIdTitle);
+                                        idExp.setId(itemIdTitle);
+                                        if (item.containsKey("children")) {
+                                            JSONObject itemIdExp = (JSONObject) item.getJSONObject("children").getJSONArray("attached").get(0);
+                                            String itemExpTitle = itemIdExp.getString("title");
+                                            itemIdChain.append(":").append(itemExpTitle);
+                                            idExp.setExp(Long.parseLong(itemExpTitle));
+                                        } else {
+                                            itemIdChain.append(":").append("0");
+                                            // 限制物品默认经验点
+                                            idExp.setExp(0);
+                                        }
+                                    }
+                                    buffs.add(idExp);
+//                                                            System.out.println("     " + itemIdChain);
+                                }
+                                curtail.setBuffs(buffs);
+                            }
+                        } else if (curtailTitle.equalsIgnoreCase("最大经验点")) {
+                            if (jobCurtail.containsKey("children")) {
+                                JSONObject maxExpObject = (JSONObject) jobCurtail.getJSONObject("children").getJSONArray("attached").get(0);
+                                level.setMaxExp(Integer.parseInt(maxExpObject.getString("title")));
+                            }
                         }
                     }
+                    curtails.add(curtail);
                     levels.add(level);
                 }
             }
         }
+
         System.out.println(1);
         List<String> lines = new ArrayList<>();
 
         lines.add("");
         lines.add("-- Automatically create data tables");
         lines.add("");
+
         insertTableSql(lines);
         lines.add("");
         lines.add("-- Inject all occupational data");
         lines.add("");
         // 生成所有职业相关insert的sql语句
-        for (Job job : jobs) {
+        for (
+                Job job : jobs) {
             String playersString = JSONArray.toJSONString(job.getPlayers());
             String line = "INSERT INTO jobs (id, name, title, players) VALUES(" + job.getId() + ", '" + job.getName() + "', '" + job.getTitle() + "', '" + playersString + "');";
             lines.add(line);
@@ -385,7 +396,8 @@ public class Launcher {
         lines.add("");
         // 生成所有职业等级相关insert的sql语句
         int i = 0;
-        for (Level level : levels) {
+        for (
+                Level level : levels) {
             i++;
             JSONArray objects = new JSONArray();
             for (Level.LevelPlayer player : level.getPlayers()) {
@@ -407,7 +419,8 @@ public class Launcher {
         lines.add("");
         // 生成所有职业限制相关insert的sql语句
         int c = 0;
-        for (Curtail curtail : curtails) {
+        for (
+                Curtail curtail : curtails) {
             String tools = parseListCurtail(Curtail.Type.TOOL, c, curtails);
             String foods = parseListCurtail(Curtail.Type.FOOD, c, curtails);
             String places = parseListCurtail(Curtail.Type.PLACE, c, curtails);
@@ -446,41 +459,44 @@ public class Launcher {
     public static void insertTableSql(List<String> lines) {
         String curtail =
                 """
-                        CREATE TABLE IF NOT EXISTS `curtails` (
-                          `id` bigint NOT NULL,
-                          `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-                          `jobId` bigint DEFAULT NULL,
-                          `levelId` bigint DEFAULT NULL,
-                          `tools` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `foods` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `places` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `destructs` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `recipes` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `interacts` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `attacks` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `buffs` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          PRIMARY KEY (`id`) USING BTREE
-                        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;""";
+                CREATE TABLE IF NOT EXISTS `curtails` (
+                  `id` bigint NOT NULL,
+                  `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+                  `jobId` bigint DEFAULT NULL,
+                  `levelId` bigint DEFAULT NULL,
+                  `tools` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `foods` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `places` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `destructs` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `recipes` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `interacts` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `attacks` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `buffs` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  PRIMARY KEY (`id`) USING BTREE
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;
+                """;
         String job =
                 """
-                        CREATE TABLE IF NOT EXISTS `jobs` (
-                          `id` bigint NOT NULL,
-                          `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-                          `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-                          `players` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-                          PRIMARY KEY (`id`) USING BTREE
-                        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;""";
+                CREATE TABLE IF NOT EXISTS `jobs` (
+                  `id` bigint NOT NULL,
+                  `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+                  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+                  `players` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+                  PRIMARY KEY (`id`) USING BTREE
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;
+                """;
         String level =
                 """
-                        CREATE TABLE IF NOT EXISTS `levels` (
-                          `id` bigint NOT NULL,
-                          `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-                          `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-                          `players` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
-                          `maxExp` bigint DEFAULT NULL,
-                          `nextId` bigint DEFAULT NULL,
-                          PRIMARY KEY (`id`) USING BTREE
-                        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;""";
+                CREATE TABLE IF NOT EXISTS `levels` (
+                  `id` bigint NOT NULL,
+                  `name` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+                  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+                  `players` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci,
+                  `maxExp` bigint DEFAULT NULL,
+                  `nextId` bigint DEFAULT NULL,
+                  PRIMARY KEY (`id`) USING BTREE
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;
+                """;
         lines.add(job);
         lines.add(level);
         lines.add(curtail);
